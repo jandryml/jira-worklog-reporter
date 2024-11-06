@@ -1,15 +1,17 @@
 package cz.jdr.app
 
-import cz.jdr.app.props.PropertiesReader
-import cz.jdr.app.props.PropertyKeys
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import cz.jdr.app.service.JiraWorklogService
+import io.ktor.client.call.*
+import cz.jdr.app.logger.logger
 
+object Main {
+    val log by logger()
+}
+    
 suspend fun main() {
-    val client = HttpClient(CIO)
-    val response: HttpResponse = client.get("https://ktor.io/")
-    println(response.status)
-    client.close()
+    val jiraWorklogService = JiraWorklogService()
+
+    val responseBody: String = jiraWorklogService.getWorklogs("ROSS-3583").body()
+
+    Main.log.info(responseBody)
 }

@@ -9,9 +9,12 @@ repositories {
     mavenCentral()
 }
 
-val ktorVersion = "3.0.0"
+val logbackVersion: String by project
+val ktorVersion: String by project
 
 dependencies {
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     //  For JVM
     implementation("io.ktor:ktor-client-cio-jvm:$ktorVersion")
