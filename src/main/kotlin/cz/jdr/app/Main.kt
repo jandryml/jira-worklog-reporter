@@ -1,32 +1,59 @@
 package cz.jdr.app
 
-import cz.jdr.app.domain.Worklog
-import cz.jdr.app.service.JiraWorklogService
-import io.ktor.client.call.*
 import cz.jdr.app.logger.logger
+import cz.jdr.app.props.PropertiesReader
+import cz.jdr.app.props.PropertyKeys
+import cz.jdr.app.service.JiraWorklogService
+import cz.jdr.app.service.WorklogCsvParser
+import io.ktor.client.call.*
+import java.io.File
 
 object Main {
     val log by logger()
 }
 
+val log = Main.log
     
 suspend fun main() {
+    log.info("Starting application")
+
+
+    val parser = WorklogCsvParser()
     val jiraWorklogService = JiraWorklogService()
-    val log = Main.log
 
-    val responseBody: String = jiraWorklogService.getWorklogs("ROSS-3583").body()
 
-    log.info(responseBody)
+    val inputFile = File(PropertiesReader.getProperty(PropertyKeys.WORKLOGS_INPUT_FILE))
 
-    val worklog = Worklog(
-        issueKey = "ROSS-287",
-        started = "2024-10-03T12:00:00.000+0000",
-        timeSpent = "0,25m",
-        comment = "ROSS - Daily Scrum"
-    )
+    if (inputFile.exists()) {
+        val parseResult = parser.parseCsv(inputFile.inputStream())
 
-    val response = jiraWorklogService.addWorklog(worklog)
-    
-    log.info(response.status.toString())
-    log.info(response.body())
+        parseResult.forEach {
+            log.info("Wogklog: $it")
+        }
+
+        val sum = parseResult.sumOf { it.timeSpent.removeSuffix("h").toDouble() }
+        log.info("Total time: $sum")
+
+        log.info("--- Want to continue? ---")
+        print("y/n: ")
+        val readLIne = readlnOrNull()
+
+        if (readLIne == "y") {
+            
+            log.info("Continuing")
+            parseResult.forEach { worklog ->
+                log.info("Adding worklog: $worklog")
+
+                val response = jiraWorklogService.addWorklog(worklog)
+                log.info(response.status.toString())
+                log.info(response.body())
+            }
+        } else {
+            log.info("Exiting")
+            return
+        }
+    } else {
+        log.error("Input file does not exist")
+        return
+    }
 }
