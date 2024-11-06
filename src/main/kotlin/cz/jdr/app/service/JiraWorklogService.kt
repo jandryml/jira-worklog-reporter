@@ -1,6 +1,8 @@
 package cz.jdr.app.service
 
+import cz.jdr.app.domain.Worklog
 import cz.jdr.app.logger.logger
+import cz.jdr.app.mapper.toJson
 import cz.jdr.app.props.PropertiesReader
 import cz.jdr.app.props.PropertyKeys
 import io.ktor.client.*
@@ -23,8 +25,18 @@ class JiraWorklogService {
             url("${baseUrl}/rest/api/2/issue/$issueKey/worklog")
             basicAuth(userName, apiKey)
             header("Accept", "application/json")
-        }.also {
-            client.close()
+        }
+    }
+
+    suspend fun addWorklog(worklog: Worklog): HttpResponse {
+        logger.info("Adding worklog")
+
+        return client.post {
+            url("${baseUrl}/rest/api/2/issue/${worklog.issueKey}/worklog")
+            basicAuth(userName, apiKey)
+            header("Accept", "application/json")
+            header("Content-Type", "application/json")
+            setBody(worklog.toJson())
         }
     }
 }
