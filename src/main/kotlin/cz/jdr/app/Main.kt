@@ -14,6 +14,7 @@ object Main {
 
 val log = Main.log
     
+// TODO clean up & refactor
 suspend fun main() {
     log.info("Starting application")
 
