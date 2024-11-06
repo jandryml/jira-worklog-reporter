@@ -14,6 +14,13 @@ class WorklogCsvParser {
     private operator fun <T> List<T>.component6(): T = get(5)
     private operator fun <T> List<T>.component7(): T = get(6)
 
+    val mapOfGenericIssueNames = mapOf(
+        "A_BTIP_Operativa" to "BTIP-1285",
+        "A_ROSS_Operativa" to "ROSS-287",
+        "A_ROSS_Schuzky" to "ROSS-287",
+        "A_ROSS_Monitoring" to "ROSS-1021"
+    )
+    
     fun parseCsv(inputStream: InputStream): List<Worklog> {
         val reader = inputStream.bufferedReader()
         reader.readLine() // skip 
@@ -21,17 +28,21 @@ class WorklogCsvParser {
         return reader.lineSequence()
             .filter { it.isNotBlank() }
             .map {
-                val (date, issueKey, _, _, description, _, time) = it.split( "\",\"", ignoreCase = false, limit = 8)
+                val (date, issueKeyRaw, _, _, description, _, time) = it.split( "\",\"", ignoreCase = false, limit = 8)
                
+                val issueKey = resolveIssueKey(issueKeyRaw.trim('"'))
                 val parsedDate =
                     LocalDate.parse(date.trim('"'), sourceFormatter).format(targetFormatter)+"T12:00:00.000+0000"
 
                 Worklog(
                     issueKey = issueKey,
                     started = parsedDate,
-                    timeSpent = time + "h",
-                    comment = description
+                    timeSpent = time.trim('"') + "h",
+                    comment = description.trim('"')
                 )
             }.toList()
     }
+    
+    private fun resolveIssueKey(inputIssueKey:String ): String =
+        mapOfGenericIssueNames.getOrDefault(inputIssueKey, inputIssueKey)
 }

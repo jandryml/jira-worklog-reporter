@@ -21,7 +21,7 @@ suspend fun main() {
     val parser = WorklogCsvParser()
     val jiraWorklogService = JiraWorklogService()
 
-
+// format in clockify report - DATE, TASK ,DESC
     val inputFile = File(PropertiesReader.getProperty(PropertyKeys.WORKLOGS_INPUT_FILE))
 
     if (inputFile.exists()) {
@@ -41,6 +41,7 @@ suspend fun main() {
         if (readLIne == "y") {
             
             log.info("Continuing")
+            // TODO add parallel processing
             parseResult.forEach { worklog ->
                 log.info("Adding worklog: $worklog")
 
