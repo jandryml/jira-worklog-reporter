@@ -9,7 +9,13 @@ repositories {
     mavenCentral()
 }
 
+val ktorVersion = "3.0.0"
+
 dependencies {
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    //  For JVM
+    implementation("io.ktor:ktor-client-cio-jvm:$ktorVersion")
+    
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 

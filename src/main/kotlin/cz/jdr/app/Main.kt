@@ -2,7 +2,14 @@ package cz.jdr.app
 
 import cz.jdr.app.props.PropertiesReader
 import cz.jdr.app.props.PropertyKeys
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 
-fun main() {
-    println("Hello person with email${PropertiesReader.getProperty(PropertyKeys.JIRA_EMAIL)}")
+suspend fun main() {
+    val client = HttpClient(CIO)
+    val response: HttpResponse = client.get("https://ktor.io/")
+    println(response.status)
+    client.close()
 }
